@@ -6,8 +6,8 @@ def main(page: ft.Page):
     page.theme_mode = ft.ThemeMode.LIGHT
     page.padding = 20
     
-    # URL of your Django API
-    API_URL = "http://127.0.0.1:8000/api/plots/"
+    # URL of your LIVE Render Django API
+    API_URL = "https://cornycom-real-estates.onrender.com/api/plots/"
 
     # UI Elements
     search_input = ft.TextField(
@@ -24,12 +24,12 @@ def main(page: ft.Page):
         page.update()
 
         try:
-            # Adding the query parameter for the district if provided
             params = {}
             if district_name:
                 params['district'] = district_name
             
-            response = requests.get(API_URL, params=params, timeout=5)
+            # Using your live Render URL
+            response = requests.get(API_URL, params=params, timeout=10)
             
             if response.status_code == 200:
                 plots = response.json()
@@ -39,11 +39,22 @@ def main(page: ft.Page):
                     results_column.controls.append(ft.Text("No plots found in this area.", size=16))
                 else:
                     for plot in plots:
+                        # Logic to handle missing map links safely
+                        map_url = plot.get('google_maps_link') or "https://www.google.com/maps"
+                        
                         results_column.controls.append(
                             ft.Card(
                                 content=ft.Container(
                                     padding=15,
                                     content=ft.Column([
+                                        # Added Image display from your API URL
+                                        ft.Image(
+                                            src=plot['main_image'], 
+                                            width=400, 
+                                            height=200, 
+                                            fit=ft.ImageFit.COVER,
+                                            border_radius=10
+                                        ),
                                         ft.Text(f"📍 {plot['district']} - {plot['village']}", size=18, weight="bold"),
                                         ft.Text(f"📏 Dimensions: {plot['dimensions']}"),
                                         ft.Text(f"💰 Price: {plot['price']} UGX", color="green", weight="bold"),
@@ -51,7 +62,7 @@ def main(page: ft.Page):
                                         ft.ElevatedButton(
                                             "View on Google Maps", 
                                             icon=ft.Icons.MAP,
-                                            on_click=lambda e, url=plot['google_maps_link']: page.launch_url(url)
+                                            on_click=lambda e, url=map_url: page.launch_url(url)
                                         )
                                     ])
                                 )
@@ -63,7 +74,7 @@ def main(page: ft.Page):
 
         except requests.exceptions.ConnectionError:
             results_column.controls.clear()
-            results_column.controls.append(ft.Text("Error: Django server is not running!", color="red", size=20))
+            results_column.controls.append(ft.Text("Error: Could not connect to the cloud server. Check your internet!", color="red", size=18))
         except Exception as e:
             results_column.controls.clear()
             results_column.controls.append(ft.Text(f"An error occurred: {e}", color="red"))
@@ -73,7 +84,8 @@ def main(page: ft.Page):
     # Layout Setup
     page.add(
         ft.Row([
-            ft.Image(src="https://via.placeholder.com/50", width=50, height=50), # Replace with your logo
+            # Using a generic real estate icon since we are live
+            ft.Icon(name=ft.Icons.LANDSCAPE, color="green", size=40),
             ft.Text("Cornycom Land Search", size=25, weight="bold")
         ]),
         ft.Row([
@@ -84,7 +96,7 @@ def main(page: ft.Page):
         results_column
     )
 
-    # Load all plots on startup
+    # Load all plots on startup from Render
     perform_search()
 
 ft.app(target=main)

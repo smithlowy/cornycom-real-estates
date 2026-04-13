@@ -1,16 +1,16 @@
+import os
 from pathlib import Path
 
 # 1. ESSENTIAL PATH & SECURITY SETTINGS
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# This is required for Django to start
 SECRET_KEY = 'django-insecure-cornycom-key-replace-this-later'
 
-# Set this to True to fix the ALLOWED_HOSTS error
+# KEEP True for now to see errors; change to False when site is 100% ready
 DEBUG = True
 
-# The '*' allows your local computer to access the server
-ALLOWED_HOSTS = ['*']
+# Add your Render URL here once you create the service
+ALLOWED_HOSTS = ['*', 'cornycom-backend.onrender.com', 'localhost', '127.0.0.1']
 
 # 2. YOUR INSTALLED APPS
 INSTALLED_APPS = [
@@ -29,6 +29,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Added for Render static files
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -70,9 +71,16 @@ CORS_ALLOW_ALL_ORIGINS = True
 
 # Standard Internationalization
 LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Africa/Kampala' # Updated for Uganda
 USE_I18N = True
 USE_TZ = True
 
+# 7. STATIC & MEDIA FILES (Crucial for Hosting)
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles' # Added for Render
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
